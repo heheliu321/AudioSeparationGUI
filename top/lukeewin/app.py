@@ -10,7 +10,7 @@ from funasr import AutoModel
 
 # 创建窗口
 root = tk.Tk()
-root.title("音频分类 https://blog.lukeewin.top")
+root.title("说话人分离 https://blog.lukeewin.top")
 
 # 获取屏幕宽度和高度
 screen_width = root.winfo_screenwidth()
