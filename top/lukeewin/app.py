@@ -73,11 +73,11 @@ selected_file_list = []
 # 选择需要分离的音频
 def select_multi_file():
     selected_file_list.clear()
-    selected_files = filedialog.askopenfilenames(title='选择多个文件', filetypes=[('音频文件', '*.mp3 *.wav *.ogg *.flac'), ('视频文件', '*.mp4 *.avi *.mov *.mkv')])
+    selected_files = filedialog.askopenfilenames(title='选择多个文件', filetypes=[('音频文件', '*.mp3 *.wav *.ogg *.flac *.aac'), ('视频文件', '*.mp4 *.avi *.mov *.mkv')])
     for tmp_file in selected_files:
         selected_file_list.append(tmp_file)
         print(f"选择的音频或视频：{tmp_file}")
-select_input_file_button = tk.Button(input_frame, text='请选择需要处理的音频或视频', command=select_multi_file)
+select_input_file_button = tk.Button(input_frame, text='选择音频', command=select_multi_file)
 select_input_file_button.pack(side=tk.LEFT, padx=10, pady=2)
 
 # 指定转写后的保存路径
