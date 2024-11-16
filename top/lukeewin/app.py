@@ -176,6 +176,7 @@ def trans():
                         ret = {"text": asr_result_text, "sentences": sentences}
                         print(f'{audio} 切分完成')
                         result_queue.put(f'{audio} 切分完成')
+                        show_info_label.config(text=f'{audio} 切分完成')
                         print(f'转写结果：{ret}')
                     else:
                         print("没有转写结果")
