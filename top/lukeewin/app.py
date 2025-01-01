@@ -42,7 +42,7 @@ ncpu = 4
 
 # ASR 模型
 model = AutoModel(model=asr_model_path,
-                  model_revision = asr_model_revision,
+                  model_revision=asr_model_revision,
                   vad_model=vad_model_path,
                   vad_model_revision=vad_model_revision,
                   punc_model=punc_model_path,
@@ -131,7 +131,7 @@ def trans():
                 try:
                     audio_bytes, _ = (
                         ffmpeg.input(audio, threads=0, hwaccel='cuda')
-                        .output("-", format="s16le", acodec="pcm_s16le", ac=1, ar=16000)
+                        .output("-", format="wav", acodec="pcm_s16le", ac=1, ar=16000)
                         .run(cmd=["ffmpeg", "-nostdin"], capture_stdout=True, capture_stderr=True)
                     )
                     res = model.generate(input=audio_bytes, batch_size_s=300, is_final=True, sentence_timestamp=True)
@@ -155,9 +155,9 @@ def trans():
                         for stn in sentences:
                             start = stn['start']
                             end = stn['end']
-                            tmp_start = to_milliseconds(start)
-                            tmp_end = to_milliseconds(end)
-                            duration = (tmp_end - tmp_start) / 1000
+                            # tmp_start = to_milliseconds(start)
+                            # tmp_end = to_milliseconds(end)
+                            # duration = round((tmp_end - tmp_start) / 1000, 3)
                             spk = stn['spk']
                             # 根据文件名和 spk 创建目录
                             final_save_path = os.path.join(save_path.get(), datetime.now().strftime("%Y-%m-%d"), audio_name, str(spk))
@@ -166,8 +166,8 @@ def trans():
                             i += 1
                             try:
                                 (
-                                    ffmpeg.input(audio, threads=0, ss=start, t=duration, hwaccel='cuda')
-                                    .output(final_save_file, codec='libmp3lame', preset='medium')
+                                    ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
+                                    .output(final_save_file, codec='libmp3lame', preset='medium', ar=16000, ac=1)
                                     .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
                                          capture_stderr=True)
                                 )
@@ -189,10 +189,12 @@ def trans():
         print("没有填写输入输出")
         messagebox.showinfo("提醒", "没有填写选择文件或保存路径")
 
+
 def start_transcription_thread():
     # 创建并启动转写线程
     thread = threading.Thread(target=trans)
     thread.start()
+
 
 btn_start = tk.Button(start_trans_frame, text="分离", command=start_transcription_thread)
 btn_start.pack(side=tk.LEFT, padx=10, pady=2)
@@ -201,9 +203,11 @@ btn_start.pack(side=tk.LEFT, padx=10, pady=2)
 show_info_label = tk.Label(show_frame, text="")
 show_info_label.pack(side=tk.LEFT, padx=10, pady=2)
 
+
 def show_info():
     res = result_queue.get()
     show_info_label.config(text=res)
+
 
 threading.Thread(target=show_info).start()
 
