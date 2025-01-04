@@ -8,6 +8,8 @@ import ffmpeg
 from tkinter import filedialog, messagebox
 from funasr import AutoModel
 
+spk_txt_queue = queue.Queue()
+
 # 创建窗口
 root = tk.Tk()
 root.title("说话人分离 https://blog.lukeewin.top")
@@ -74,11 +76,15 @@ selected_file_list = []
 def select_multi_file():
     selected_file_list.clear()
     selected_files = filedialog.askopenfilenames(title='选择多个文件', filetypes=[('音频文件', '*.mp3 *.wav *.ogg *.flac *.aac'), ('视频文件', '*.mp4 *.avi *.mov *.mkv')])
+    selected_file_count = len(selected_files)
     for tmp_file in selected_files:
         selected_file_list.append(tmp_file)
         print(f"选择的音频或视频：{tmp_file}")
+    show_input_info.config(text=f"已选择 {selected_file_count} 个文件")
 select_input_file_button = tk.Button(input_frame, text='选择音频', command=select_multi_file)
 select_input_file_button.pack(side=tk.LEFT, padx=10, pady=2)
+show_input_info = tk.Label(input_frame, text='')
+show_input_info.pack(side=tk.LEFT, padx=10, pady=2)
 
 # 指定转写后的保存路径
 output_label = tk.Label(output_frame, text="保存路径")
@@ -153,6 +159,7 @@ def trans():
                         # 剪切音频或视频片段
                         i = 0
                         for stn in sentences:
+                            stn_txt = stn['text']
                             start = stn['start']
                             end = stn['end']
                             # tmp_start = to_milliseconds(start)
@@ -163,6 +170,8 @@ def trans():
                             final_save_path = os.path.join(save_path.get(), datetime.now().strftime("%Y-%m-%d"), audio_name, str(spk))
                             os.makedirs(final_save_path, exist_ok=True)
                             final_save_file = os.path.join(final_save_path, str(i)+'.mp3')
+                            spk_txt_file = os.path.join(final_save_path, f'spk{spk}.txt')
+                            spk_txt_queue.put({'spk_txt_file': spk_txt_file, 'spk_txt': stn_txt, 'start': start, 'end': end})
                             i += 1
                             try:
                                 (
@@ -210,6 +219,23 @@ def show_info():
 
 
 threading.Thread(target=show_info).start()
+
+
+def write_txt():
+    while True:
+        item = spk_txt_queue.get()
+        spk_txt_file = item['spk_txt_file']
+        spk_txt = item['spk_txt']
+        spk_start = item['start']
+        spk_end = item['end']
+        dir_path = os.path.dirname(spk_txt_file)
+        os.makedirs(dir_path, exist_ok=True)
+        with open(spk_txt_file, 'a', encoding='utf-8') as f:
+            f.write(f"{spk_start} --> {spk_end}\n{spk_txt}\n\n")
+
+
+threading.Thread(target=write_txt).start()
+
 
 if __name__ in '__main__':
     root.mainloop()
