@@ -16,16 +16,11 @@ pip install -U funasr modelscope ffmpeg-python
 # 3. 功能
 支持对指定的单个或者多个音频中不同的说话人讲的话进行分离，分别归类到不同的目录中 \
 如果你需要对视频进行切片，需要修改源代码，欢迎有能力的大佬提交 Pr
-# 4. 其它
-模型中的模型可以到 https://modelscope.cn 下载 \
-用到的模型有下面这些：
+# 4. 模型下载
+执行下面程序，会自动下载模型到当前用户 .cache/modelscope/hub/iic/ 目录中
 ```shell
-speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch
-speech_fsmn_vad_zh-cn-16k-common-pytorch
-punc_ct-transformer_zh-cn-common-vocab272727-pytorch
-speech_campplus_sv_zh-cn_16k-common
+python download_model.py
 ```
-下载后保存在电脑的家目录的 .cache/modelscope/hub/iic/ 目录中
 # 5. 联系
 可以添加交流群 746213237 \
 个人技术分享博客：https://blog.lukeewin.top \
