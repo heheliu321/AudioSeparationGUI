@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 import queue
 from datetime import timedelta, datetime
-
+from pydub import AudioSegment
 import ffmpeg
 from tkinter import filedialog, messagebox
 from funasr import AutoModel
@@ -61,6 +61,9 @@ model = AutoModel(model=asr_model_path,
 
 # 创建一个队列，用于线程间通信
 result_queue = queue.Queue()
+# 音频合并队列
+audio_concat_queue = queue.Queue()
+
 
 input_frame = tk.Frame(root)
 input_frame.pack(side=tk.TOP, padx=10, pady=2)
@@ -133,6 +136,7 @@ def trans():
                 audio_name = os.path.splitext(os.path.basename(audio))[0]
                 _, audio_extension = os.path.splitext(audio)
                 show_info_label.config(text=f'正在执行中，请勿关闭程序。{audio}')
+                speaker_audios = {}  # 每个说话人作为 key，value 为列表，列表中为当前说话人对应的每个音频片段
                 # 音频预处理
                 try:
                     audio_bytes, _ = (
@@ -166,11 +170,14 @@ def trans():
                             # tmp_end = to_milliseconds(end)
                             # duration = round((tmp_end - tmp_start) / 1000, 3)
                             spk = stn['spk']
+
                             # 根据文件名和 spk 创建目录
-                            final_save_path = os.path.join(save_path.get(), datetime.now().strftime("%Y-%m-%d"), audio_name, str(spk))
+                            date = datetime.now().strftime("%Y-%m-%d")
+                            final_save_path = os.path.join(save_path.get(), date, audio_name, str(spk))
                             os.makedirs(final_save_path, exist_ok=True)
                             final_save_file = os.path.join(final_save_path, str(i)+'.mp3')
-                            spk_txt_file = os.path.join(final_save_path, f'spk{spk}.txt')
+                            spk_txt_path = os.path.join(save_path.get(), date, audio_name)
+                            spk_txt_file = os.path.join(spk_txt_path, f'spk{spk}.txt')
                             spk_txt_queue.put({'spk_txt_file': spk_txt_file, 'spk_txt': stn_txt, 'start': start, 'end': end})
                             i += 1
                             try:
@@ -182,11 +189,17 @@ def trans():
                                 )
                             except ffmpeg.Error as e:
                                 print(f"剪切音频发生错误，错误信息：{e}")
+                            # 记录说话人和对应的音频片段，用于合并音频片段
+                            if spk not in speaker_audios:
+                                speaker_audios[spk] = []  # 列表中存储音频片段
+                            speaker_audios[spk].append({'file': final_save_file, 'audio_name': audio_name})
                         ret = {"text": asr_result_text, "sentences": sentences}
                         print(f'{audio} 切分完成')
                         result_queue.put(f'{audio} 切分完成')
                         show_info_label.config(text=f'{audio} 切分完成')
                         print(f'转写结果：{ret}')
+                        # 存入合并队列
+                        audio_concat_queue.put(speaker_audios)
                     else:
                         print("没有转写结果")
                 except Exception as e:
@@ -235,6 +248,29 @@ def write_txt():
 
 
 threading.Thread(target=write_txt).start()
+
+
+def audio_concat_worker():
+    while True:
+        speaker_audios_tmp = audio_concat_queue.get()
+        for spk, audio_segments in speaker_audios_tmp.items():
+            # 合并每个说话人的音频片段
+            audio_name = audio_segments[0]['audio_name']
+            output_file = os.path.join(save_path.get(), datetime.now().strftime("%Y-%m-%d"), audio_name, f"{spk}.mp3")
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            inputs = [seg['file'] for seg in audio_segments]
+            concat_audio = AudioSegment.from_file(inputs[0])
+            for i in range(1, len(inputs)):
+                concat_audio = concat_audio + AudioSegment.from_file(inputs[i])
+            concat_audio.export(output_file, format="mp3")
+            print(f"已将 {spk} 的音频合并到 {output_file}")
+        audio_concat_queue.task_done()
+
+
+# 创建一个线程用于消费音频合并队列中的内容
+audio_concat_thread = threading.Thread(target=audio_concat_worker)
+audio_concat_thread.daemon = True
+audio_concat_thread.start()
 
 
 if __name__ in '__main__':
