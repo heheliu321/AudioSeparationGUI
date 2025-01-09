@@ -13,7 +13,7 @@
 # 3. 安装
 执行下面命令来安装依赖
 ```shell
-pip install -U funasr modelscope ffmpeg-python
+pip install -U funasr modelscope ffmpeg-python pydub
 ```
 此外还需要安装 torch，可以到 torch 官方中根据自己电脑情况安装不同版本的 torch \
 安装 ffmpeg，可以到 github 中搜索 ffmpeg，下载解压后，配置环境变量
