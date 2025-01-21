@@ -1,6 +1,7 @@
 # 0. 效果演示
 ![img.png](img/img.png) \
-演示视频可以访问 https://www.bilibili.com/video/BV1oxrcYuELK
+演示音频分割功能可以访问 https://www.bilibili.com/video/BV1oxrcYuELK \
+演示视频分割功能可以访问 https://www.bilibili.com/video/BV1xYweeKEvZ
 # 1. 说明
 这是基于开源的 FunASR 实现的说话人分离的 GUI 项目，可以在支持图形界面中的任意 PC 端运行 \
 要求 python version >= 3.8 \
