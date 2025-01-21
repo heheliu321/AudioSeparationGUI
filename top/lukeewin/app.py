@@ -64,6 +64,9 @@ result_queue = queue.Queue()
 # 音频合并队列
 audio_concat_queue = queue.Queue()
 
+# 支持的音视频格式
+support_audio_format = ['.mp3', '.m4a', 'aac', 'ogg', 'wav', 'flac', 'wma', 'aif']
+support_video_format = ['.mp4', '.avi', '.mov', '.mkv']
 
 input_frame = tk.Frame(root)
 input_frame.pack(side=tk.TOP, padx=10, pady=2)
@@ -78,13 +81,13 @@ selected_file_list = []
 # 选择需要分离的音频
 def select_multi_file():
     selected_file_list.clear()
-    selected_files = filedialog.askopenfilenames(title='选择多个文件', filetypes=[('音频文件', '*.mp3 *.wav *.ogg *.flac *.aac'), ('视频文件', '*.mp4 *.avi *.mov *.mkv')])
+    selected_files = filedialog.askopenfilenames(title='选择多个文件', filetypes=[('音频文件', '*.mp3 *.wav *.ogg *.flac *.aac *.m4a *.aif *.wma'), ('视频文件', '*.mp4 *.avi *.mov *.mkv')])
     selected_file_count = len(selected_files)
     for tmp_file in selected_files:
         selected_file_list.append(tmp_file)
         print(f"选择的音频或视频：{tmp_file}")
     show_input_info.config(text=f"已选择 {selected_file_count} 个文件")
-select_input_file_button = tk.Button(input_frame, text='选择音频', command=select_multi_file)
+select_input_file_button = tk.Button(input_frame, text='选择音视频', command=select_multi_file)
 select_input_file_button.pack(side=tk.LEFT, padx=10, pady=2)
 show_input_info = tk.Label(input_frame, text='')
 show_input_info.pack(side=tk.LEFT, padx=10, pady=2)
@@ -181,12 +184,21 @@ def trans():
                             spk_txt_queue.put({'spk_txt_file': spk_txt_file, 'spk_txt': stn_txt, 'start': start, 'end': end})
                             i += 1
                             try:
-                                (
-                                    ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
-                                    .output(final_save_file, codec='libmp3lame', preset='medium', ar=16000, ac=1)
-                                    .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
-                                         capture_stderr=True)
-                                )
+                                if os.path.splitext(audio) in support_audio_format:
+                                    (
+                                        ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
+                                        .output(final_save_file, acodec='libmp3lame', preset='medium', ar=16000, ac=1)
+                                        .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
+                                             capture_stderr=True)
+                                    )
+                                else:
+                                    final_save_file = os.path.join(final_save_path, str(i)+'.mp4')
+                                    (
+                                        ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
+                                        .output(final_save_file, vcodec='libx264', crf=23, acodec='aac', ab='128k')
+                                        .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
+                                             capture_stderr=True)
+                                    )
                             except ffmpeg.Error as e:
                                 print(f"剪切音频发生错误，错误信息：{e}")
                             # 记录说话人和对应的音频片段，用于合并音频片段
