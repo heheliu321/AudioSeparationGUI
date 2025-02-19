@@ -184,7 +184,7 @@ def trans():
                             spk_txt_queue.put({'spk_txt_file': spk_txt_file, 'spk_txt': stn_txt, 'start': start, 'end': end})
                             i += 1
                             try:
-                                if os.path.splitext(audio) in support_audio_format:
+                                if os.path.splitext(audio)[-1] in support_audio_format:
                                     (
                                         ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
                                         .output(final_save_file, acodec='libmp3lame', preset='medium', ar=16000, ac=1)
