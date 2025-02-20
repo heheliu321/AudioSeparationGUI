@@ -65,7 +65,7 @@ result_queue = queue.Queue()
 audio_concat_queue = queue.Queue()
 
 # 支持的音视频格式
-support_audio_format = ['.mp3', '.m4a', 'aac', 'ogg', 'wav', 'flac', 'wma', 'aif']
+support_audio_format = ['.mp3', '.m4a', '.aac', '.ogg', '.wav', '.flac', '.wma', '.aif']
 support_video_format = ['.mp4', '.avi', '.mov', '.mkv']
 
 input_frame = tk.Frame(root)
