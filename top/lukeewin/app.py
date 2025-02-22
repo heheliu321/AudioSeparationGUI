@@ -178,20 +178,22 @@ def trans():
                             date = datetime.now().strftime("%Y-%m-%d")
                             final_save_path = os.path.join(save_path.get(), date, audio_name, str(spk))
                             os.makedirs(final_save_path, exist_ok=True)
-                            final_save_file = os.path.join(final_save_path, str(i)+'.mp3')
+                            # 获取音视频后缀
+                            file_ext = os.path.splitext(audio)[-1]
+                            final_save_file = os.path.join(final_save_path, str(i)+file_ext)
                             spk_txt_path = os.path.join(save_path.get(), date, audio_name)
                             spk_txt_file = os.path.join(spk_txt_path, f'spk{spk}.txt')
                             spk_txt_queue.put({'spk_txt_file': spk_txt_file, 'spk_txt': stn_txt, 'start': start, 'end': end})
                             i += 1
                             try:
-                                if os.path.splitext(audio)[-1] in support_audio_format:
+                                if file_ext in support_audio_format:
                                     (
                                         ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
-                                        .output(final_save_file, acodec='libmp3lame', preset='medium', ar=16000, ac=1)
+                                        .output(final_save_file)
                                         .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
                                              capture_stderr=True)
                                     )
-                                else:
+                                elif file_ext in support_video_format:
                                     final_save_file = os.path.join(final_save_path, str(i)+'.mp4')
                                     (
                                         ffmpeg.input(audio, threads=0, ss=start, to=end, hwaccel='cuda')
@@ -199,6 +201,8 @@ def trans():
                                         .run(cmd=["ffmpeg", "-nostdin"], overwrite_output=True, capture_stdout=True,
                                              capture_stderr=True)
                                     )
+                                else:
+                                    print(f'{audio}不支持')
                             except ffmpeg.Error as e:
                                 print(f"剪切音频发生错误，错误信息：{e}")
                             # 记录说话人和对应的音频片段，用于合并音频片段
