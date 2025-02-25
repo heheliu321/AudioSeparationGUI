@@ -117,6 +117,11 @@ def copy_output_path():
 copy_button = tk.Button(output_frame, text="复制路径", command=copy_output_path)
 copy_button.pack(side=tk.RIGHT, padx=10, pady=2)
 
+# 分离字数
+split_number = tk.Entry(start_trans_frame, width=2)
+split_number.insert(0, str(10))
+split_number.pack(side=tk.LEFT, padx=5, pady=2)
+
 def to_date(milliseconds):
     """将时间戳转换为SRT格式的时间"""
     time_obj = timedelta(milliseconds=milliseconds)
@@ -155,7 +160,7 @@ def trans():
                         for sentence in rec_result["sentence_info"]:
                             start = to_date(sentence["start"])
                             end = to_date(sentence["end"])
-                            if sentences and sentence["spk"] == sentences[-1]["spk"]:
+                            if sentences and sentence["spk"] == sentences[-1]["spk"] and len(sentences[-1]["text"]) < int(split_number.get()):
                                 sentences[-1]["text"] += "" + sentence["text"]
                                 sentences[-1]["end"] = end
                             else:
