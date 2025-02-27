@@ -295,4 +295,5 @@ audio_concat_thread.start()
 
 
 if __name__ in '__main__':
+    print("项目源码：https://github.com/lukeewin/AudioSeparationGUI")
     root.mainloop()

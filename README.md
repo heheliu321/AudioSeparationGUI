@@ -1,7 +1,9 @@
 # 0. 效果演示
 ![img.png](img/img.png) \
 演示音频分割功能可以访问 https://www.bilibili.com/video/BV1oxrcYuELK \
-演示视频分割功能可以访问 https://www.bilibili.com/video/BV1xYweeKEvZ
+演示视频分割功能可以访问 https://www.bilibili.com/video/BV1xYweeKEvZ \
+如果是不懂代码的人想要使用本项目，可以使用我打包好的程序，我是在Windows 11系统上打包的，不确定Windows其它版本是否能用，如果是非Windows系统，请使用源码方式运行。 \
+[点击这里跳转到打包好的可执行程序](https://item.taobao.com/item.htm?ft=t&id=853452834970)
 # 1. 说明
 这是基于开源的 FunASR 实现的说话人分离的 GUI 项目，可以在支持图形界面中的任意 PC 端运行 \
 要求 python version >= 3.8 \
@@ -11,25 +13,28 @@
 2023-11-14 对选择的多个音频分离不同的人声 \
 2024-01-04 保存每个说话人对应的内容 \
 2024-01-09 增加合并相同说话人功能 \
-2024-01-22 增加视频切片功能
+2024-01-22 增加视频切片功能 \
+2024-02-25 新增允许控制每个音频片段切割的字符数
 # 3. 安装
 执行下面命令来安装依赖
 ```shell
 pip install -U funasr modelscope ffmpeg-python pydub
 ```
 此外还需要安装 torch，可以到 torch 官方中根据自己电脑情况安装不同版本的 torch \
-安装 ffmpeg，可以到 github 中搜索 ffmpeg，下载解压后，配置环境变量
+安装 ffmpeg，可以到 github 中搜索 ffmpeg，下载解压后，配置环境变量 \
+如果不会安装 torch 和 ffmpeg，可以参考我之前发布到博客中的一篇[文章](https://blog.lukeewin.top/archives/windows-an-zhuang-whisper#toc-head-1)。
 # 4. 功能
 1. 支持对指定的单个或者多个音频中不同的说话人讲的话进行分离，分别归类到不同的目录中
-2. 保存每个说话人对应的内容 \
-如果你需要对视频进行切片，需要修改源代码，欢迎有能力的大佬提交 Pr
+2. 保存每个说话人对应的包含时间戳的文本内容
+3. 支持视频切片，根据说话人声音进行视频切片 
+
 # 5. 模型下载
-执行下面程序，会自动下载模型到当前用户 .cache/modelscope/hub/iic/ 目录中
+执行下面程序，会自动下载模型到当前用户 .cache/modelscope/hub/models/iic/ 目录中
 ```shell
 python download_model.py
 ```
 # 6. 联系
 可以添加交流群 746213237 \
 个人技术分享博客：https://blog.lukeewin.top \
-如果是小白，不懂代码，可以点击[这里](https://item.taobao.com/item.htm?ft=t&id=853452834970)
+如果是小白，不懂代码，可以[点击这里](https://item.taobao.com/item.htm?ft=t&id=853452834970)
 
