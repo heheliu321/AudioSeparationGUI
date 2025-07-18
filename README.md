@@ -2,6 +2,7 @@
 ![img.png](img/img.png) \
 演示音频分割功能可以访问 https://www.bilibili.com/video/BV1oxrcYuELK \
 演示视频分割功能可以访问 https://www.bilibili.com/video/BV1xYweeKEvZ \
+演示热词功能 https://www.bilibili.com/video/BV1uZuSzFEtM \
 如果是不懂代码的人想要使用本项目，可以使用我打包好的程序，我是在Windows 11系统上打包的，不确定Windows其它版本是否能用，如果是非Windows系统，请使用源码方式运行。 \
 [点击这里跳转到打包好的可执行程序](https://item.taobao.com/item.htm?ft=t&id=853452834970)
 # 1. 说明
@@ -29,6 +30,7 @@ pip install -U funasr modelscope ffmpeg-python pydub
 1. 支持对指定的单个或者多个音频中不同的说话人讲的话进行分离，分别归类到不同的目录中
 2. 保存每个说话人对应的包含时间戳的文本内容
 3. 支持视频切片，根据说话人声音进行视频切片 
+4. 支持自定义热词
 
 # 5. 模型下载
 执行下面程序，会自动下载模型到当前用户 .cache/modelscope/hub/models/iic/ 目录中
