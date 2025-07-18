@@ -3,10 +3,13 @@ import threading
 import tkinter as tk
 import queue
 from datetime import timedelta, datetime
+
+import torch.cuda
 from pydub import AudioSegment
 import ffmpeg
 from tkinter import filedialog, messagebox
 from funasr import AutoModel
+import psutil
 
 spk_txt_queue = queue.Queue()
 
@@ -38,9 +41,10 @@ punc_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "m
 punc_model_revision = "v2.0.4"
 spk_model_path = os.path.join(home_directory, ".cache", "modelscope", "hub", "models", "iic", "speech_campplus_sv_zh-cn_16k-common")
 spk_model_revision = "v2.0.4"
+hotword_file = "./hotwords.txt"
 ngpu = 1
-device = "cuda"
-ncpu = 4
+device = "cuda" if torch.cuda.is_available() else "cpu"
+ncpu = psutil.cpu_count()
 
 # ASR 模型
 model = AutoModel(model=asr_model_path,
@@ -67,6 +71,14 @@ audio_concat_queue = queue.Queue()
 # 支持的音视频格式
 support_audio_format = ['.mp3', '.m4a', '.aac', '.ogg', '.wav', '.flac', '.wma', '.aif']
 support_video_format = ['.mp4', '.avi', '.mov', '.mkv']
+
+hotwords = ''
+if hotword_file is not None and os.path.exists(hotword_file):
+    with open(hotword_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        lines = [line.strip() for line in lines]
+    hotwords = " ".join(lines)
+    print(f"热词：{hotwords}")
 
 input_frame = tk.Frame(root)
 input_frame.pack(side=tk.TOP, padx=10, pady=2)
@@ -118,6 +130,8 @@ copy_button = tk.Button(output_frame, text="复制路径", command=copy_output_p
 copy_button.pack(side=tk.RIGHT, padx=10, pady=2)
 
 # 分离字数
+label_split = tk.Label(start_trans_frame, text="合并相邻相同讲话人阈值")
+label_split.pack(side=tk.LEFT, padx=5, pady=2)
 split_number = tk.Entry(start_trans_frame, width=2)
 split_number.insert(0, str(10))
 split_number.pack(side=tk.LEFT, padx=5, pady=2)
@@ -152,7 +166,7 @@ def trans():
                         .output("-", format="wav", acodec="pcm_s16le", ac=1, ar=16000)
                         .run(cmd=["ffmpeg", "-nostdin"], capture_stdout=True, capture_stderr=True)
                     )
-                    res = model.generate(input=audio_bytes, batch_size_s=300, is_final=True, sentence_timestamp=True)
+                    res = model.generate(input=audio_bytes, batch_size_s=300, is_final=True, sentence_timestamp=True, hotword=hotwords)
                     rec_result = res[0]
                     asr_result_text = rec_result['text']
                     if asr_result_text != '':
